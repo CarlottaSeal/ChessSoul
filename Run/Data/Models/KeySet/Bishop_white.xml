@@ -1,0 +1,12 @@
+﻿<StaticModelInfo
+    objFile = "Data/Models/KeySet/Bishop_white.obj"
+    shader = "Data/Shaders/BlinnPhong"
+    diffuseMap = "Data/Models/KeySet/keysmaterial_Base_color.png"
+    normalMap = "Data/Models/KeySet/keysmaterial_Normal_DirectX.png"
+    specGlossEmitMap = "Data/Models/KeySet/keysmaterial_Specular_Converted.png"
+
+    unitsPerMeter = "0.5"
+    x = "left"
+    y="up"
+    z="forward"
+/>

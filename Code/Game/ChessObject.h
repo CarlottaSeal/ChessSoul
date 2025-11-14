@@ -21,7 +21,7 @@ public:
     virtual void Update(float deltaSeconds) = 0;
     virtual void Render() const = 0;
 
-    Mat44 GetModelToWorldTransform() const;
+    virtual Mat44 GetModelToWorldTransform() const;
 
     void OnImpacted();
     void OnUnImpacted();

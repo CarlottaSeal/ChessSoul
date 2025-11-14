@@ -47,6 +47,9 @@ public:
 	float m_originRoll;
 
 	Camera m_worldCamera;
+
+	Vec3 m_autoPos = Vec3(4.f, -2.f, 5.f);
+	EulerAngles m_autoOrientation = EulerAngles(90.f, 45.f, 0.f);
 };
 
 

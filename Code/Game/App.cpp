@@ -3,21 +3,17 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Renderer/SimpleTriangleFont.hpp"
 #include "Engine/Input/InputSystem.hpp"
-#include "Engine/Core/Time.hpp"
-#include "Engine/Core/ErrorWarningAssert.hpp"
-#include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Core/Clock.hpp"
 #include "Engine/Core/DebugRenderSystem.hpp"
 #include "Engine/Input/KeyButtonState.hpp"
 #include "Engine/Input/InputSystem.hpp"
+#include "Engine/Core/NetworkSystem.h"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/Core/EngineCommon.hpp"
 
 #include "Game/App.hpp"
 #include "Game/Game.hpp"
 #include "Game/Gamecommon.hpp"
-#include "Game/EngineBuildPreferences.hpp"
-
-#include <math.h>
 
 App* g_theApp = nullptr;
 Renderer* g_theRenderer = nullptr;
@@ -64,6 +60,18 @@ void App::Startup()
 
 	/*AudioSystemConfig audioSystemConfig;
 	g_theAudio = new AudioSystem(audioSystemConfig);*/
+	UIConfig uiConfig;
+	uiConfig.m_window = g_theWindow;
+	uiConfig.m_renderer = g_theRenderer;
+	uiConfig.m_bitmapFontName = "SquirrelFixedFont";
+	uiConfig.m_inputSystem = g_theInput;
+	g_theUISystem = new UISystem(uiConfig);
+
+	NetworkSystemConfig networkConfig;
+	networkConfig.m_serverAddress = "192.168.0.102";
+	networkConfig.m_mode = NetworkMode::CLIENT;
+	networkConfig.m_serverPort = 241;
+	g_theNetworkSystem = new NetworkSystem(networkConfig);
 
 	DebugRenderConfig debugRenderConfig;
 	debugRenderConfig.m_renderer = g_theRenderer;
@@ -74,6 +82,8 @@ void App::Startup()
 	g_theEventSystem->StartUp(); 
 	g_theDevConsole->Startup();
 	g_theInput->Startup();
+	g_theNetworkSystem->Startup();
+	g_theUISystem->Startup();
 	DebugRenderSystemStartup(debugRenderConfig);
 
 	g_theGame = new Game();
@@ -90,6 +100,8 @@ void App::Shutdown()
 	delete g_theGame;
 	g_theGame = nullptr;
 
+	g_theNetworkSystem->Shutdown();
+	g_theUISystem->Shutdown();
 	g_theEventSystem->Shutdown();
 	//g_theAudio->Shutdown();
 	g_theRenderer->ShutDown();
@@ -98,6 +110,9 @@ void App::Shutdown()
 	g_theDevConsole->Shutdown();
 
 	DebugRenderSystemShutdown();
+
+	delete g_theNetworkSystem;
+	g_theNetworkSystem = nullptr;
 
 	delete g_theDevConsole;
 	g_theDevConsole = nullptr;
@@ -127,8 +142,10 @@ void App::BeginFrame()
 	g_theRenderer->BeginFrame();
 	//g_theAudio->BeginFrame();
 	g_theEventSystem->BeginFrame();
+	g_theUISystem->BeginFrame();
 	g_theDevConsole->BeginFrame();
-
+	if (g_theGame->m_isRemote)
+		g_theNetworkSystem->BeginFrame();
 	DebugRenderBeginFrame();
 }
 
@@ -211,9 +228,12 @@ void App::EndFrame()
 	g_theWindow->EndFrame();
 	g_theRenderer->EndFrame();
 	g_theInput->EndFrame();
+	g_theUISystem->EndFrame();
 	//g_theAudio->EndFrame();
 	g_theEventSystem->EndFrame();
 	g_theDevConsole->EndFrame();
+	if (g_theGame->m_isRemote)
+		g_theNetworkSystem->EndFrame();
 
 	for (int i = 0; i < 256; ++i)
 	{
@@ -225,7 +245,8 @@ void App::EndFrame()
 
 void App::UpdateCursor()
 {
-	if (g_theGame->m_currentState==GameState::ATTRACT || g_theGame->m_openDevConsole || !g_theWindow->WindowHasFocus())
+	if (g_theGame->m_currentState!=GameState::PLAYING || g_theGame->m_openDevConsole || !g_theWindow->WindowHasFocus()
+		|| g_theGame->m_promoteWidget->IsEnabled())
 	{
 		g_theInput->SetCursorMode(CursorMode::POINTER);
 	}

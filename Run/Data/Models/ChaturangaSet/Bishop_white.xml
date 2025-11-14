@@ -1,0 +1,11 @@
+﻿<StaticModelInfo
+    objFile = "Data/Models/ChaturangaSet/bishop.obj"
+    shader = "Data/Shaders/BlinnPhong"
+    diffuseMap = "Data/Models/ChaturangaSet/Gaja__albedoWhite.tga.png"
+    normalMap = "Data/Models/ChaturangaSet/Gaja__normal.tga.png"
+    specGlossEmitMap = ""
+    unitsPerMeter = "0.05"
+    x = "left"
+    y="up"
+    z="forward"
+/>

@@ -4,6 +4,8 @@
 
 #include "Gamecommon.hpp"
 
+class StaticMesh;
+
 class ChessPieceDefinition
 {
 public:
@@ -22,6 +24,7 @@ public:
     
 public:
     static std::vector<ChessPieceDefinition> s_chessPieceDefs;
+    StaticMesh* m_sets[3][2];
 
 public:
     std::string m_name;

@@ -1,0 +1,11 @@
+﻿<StaticModelInfo
+    objFile = "Data/Models/ChaturangaSet/pawn.obj"
+    shader = "Data/Shaders/BlinnPhong"
+    diffuseMap = "Data/Models/ChaturangaSet/Padati__albedoWhite.tga.png"
+    normalMap = "Data/Models/ChaturangaSet/Padati__normal.tga.png"
+    specGlossEmitMap = ""
+    unitsPerMeter = "0.05"
+    x = "left"
+    y="up"
+    z="forward"
+/>

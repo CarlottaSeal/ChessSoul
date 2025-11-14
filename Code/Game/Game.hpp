@@ -2,13 +2,14 @@
 #include "Game/Gamecommon.hpp"
 #include "Game/App.hpp"
 #include "Engine/Renderer/Camera.hpp"
-#include "Engine/Math/AABB2.hpp"
 #include "Engine/Core/Vertex_PCU.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
+#include "Engine/UI/Widget.h"
 
 #include <vector>
 
 #include "ChessKishi.h"
+#include "Engine/Core/StaticMesh.h"
 
 class ChessReferee;
 class ChessObject;
@@ -18,6 +19,7 @@ class Clock;
 enum class GameState
 {
 	ATTRACT,
+	LOBBY,
 	PLAYING,
 	COUNT
 };
@@ -39,14 +41,11 @@ public:
 	void ChangeState(GameState newState);
 	void EnterState(GameState state);
 	void ExitState(GameState state);
-	void EnterAttractState();
-	void EnterPlayingState();
-	void ExitPlayingState();
-	void ExitLobbyState();
-
+	
 	void UpdateFirstPersonRaycast();
 
 public:
+	bool m_isRemote = true;
 	bool m_openDevConsole = false;
 	bool m_isInAttractMode;
 	Clock* m_gameClock;
@@ -63,6 +62,7 @@ public:
 	//state
 	GameState m_currentState = GameState::COUNT;
 	GameState m_nextState = GameState::ATTRACT;
+	Texture* m_attractCover = nullptr;
 
 	bool m_hasWon = false;
 
@@ -71,12 +71,27 @@ public:
 	int m_debugInt = 0;
 	float m_debugFloat = 0.f;
 
+	StaticMesh* m_testMesh = nullptr;
+
+	void LoadAnObj();
+
 private:
 	void AttractStateUpdate();
 	void PlayingStateUpdate();
+	void LobbyStateUpdate();
 	void AttractModeRender() const;
 	void PlayingModeRender() const;
-	//void UpdateCamera();  //move into m_player
+	void LobbyModeRender() const;
+	void EnterAttractState();
+	void ExitAttractState();
+	void EnterPlayingState();
+	void ExitPlayingState();
+	void ExitLobbyState();
+	void EnterLobbyState();
+	void InitializeWidgetsForAttract();
+	void InitializeWidgetsForLobby();
+	void RegisterAllWidgetEvents();
+	
 	void PrintGameControlToDevConsole();
 	void DrawSquareXYGrid(int unit = 100);
 	void DebugRenderSystemInputUpdate();
@@ -85,6 +100,24 @@ private:
 	void UpdateDebugInt();
 	std::string GetDebugRenderPrintByInt() const;
 
+	//event
+	static bool OnRemoteModeSelection(EventArgs& args);
+	static bool OnLocalModeSelection(EventArgs& args);
+	static bool OnModelSet1Selection(EventArgs& args);
+	static bool OnModelSet2Selection(EventArgs& args);
+	static bool OnModelSet3Selection(EventArgs& args);
+	static bool OnServerModeSelection(EventArgs& args);
+	static bool OnClientModeSelection(EventArgs& args);
+
+
+public:
+	int m_setSelected = 0;
+
+	//widgets
+	Widget* m_attractWidget = nullptr;
+	Widget* m_lobbyWidget[2];
+	Widget* m_promoteWidget = nullptr;
+	
 private:
 	bool m_isSlowMo;
 	bool m_isUsingUserTimeScale;

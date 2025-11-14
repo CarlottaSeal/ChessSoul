@@ -3,9 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Protogame3D", "Code\Game\Game.vcxproj", "{CBE16629-97E8-40FB-91DF-EFCE7A062373}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ChessSoulNet", "Code\Game\Game.vcxproj", "{CBE16629-97E8-40FB-91DF-EFCE7A062373}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\Engine\Code\Engine\Engine.vcxproj", "{F4C36EEC-EED0-4FDB-B22A-F13D26C403AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{A37E608B-0ABC-4040-9B56-36B4402A7A5C}"
+	ProjectSection(SolutionItems) = preProject
+		Run\Data\Models\Woman.xml = Run\Data\Models\Woman.xml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

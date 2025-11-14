@@ -7,6 +7,7 @@
 #include "ChessReferee.h"
 #include "Game.hpp"
 #include "Engine/Core/VertexUtils.hpp"
+#include "Engine/Core/Clock.hpp"
 #include "Engine/Math/FloatRange.hpp"
 
 extern Game* g_theGame;
@@ -25,7 +26,7 @@ ChessPiece::ChessPiece(int ownerID, ChessPieceType type, Vec3 position, EulerAng
     m_position = position;
     m_orientation = orientation;
 
-    InitializeDebugDraw();
+    //InitializeDebugDraw();
 }
 
 ChessPiece::~ChessPiece()
@@ -78,10 +79,12 @@ void ChessPiece::UpdateMyTint(float deltaSeconds)
     if (m_isImpacted==true && !m_isGrabbed)
     {
         if (m_ownerKishiID == 0)
-            m_tint = Rgba8::TEAL;
+            m_tint = Rgba8::WHITE;
+            //m_tint = Rgba8::TEAL;
         else
         {
-            m_tint = Rgba8::PEACH;
+            m_tint = Rgba8::WHITE;
+            //m_tint = Rgba8::PEACH;
         }
         //m_tint.r += 180;
         //m_tint.g += 180;
@@ -108,11 +111,13 @@ void ChessPiece::SetMyColor(int ownerID)
 {
     if (ownerID==0)
     {
-        m_tint = Rgba8::BLUE;
+        m_tint = Rgba8::WHITE;
+        //m_tint = Rgba8::BLUE;
     }
     else
     {
-        m_tint = Rgba8::YELLOW;
+        m_tint = Rgba8::WHITE;
+        //m_tint = Rgba8::YELLOW;
     }
 }
 
@@ -123,17 +128,31 @@ int ChessPiece::GetMyOwnerID() const
 
 void ChessPiece::Render() const
 {
+    // g_theRenderer->BindShader(m_definition.m_shader);
+    // g_theRenderer->SetSamplerMode(SamplerMode::POINT_CLAMP);
+    // g_theRenderer->BindTexture(m_definition.m_diffuseTextures[m_ownerKishiID],0);
+    // g_theRenderer->BindTexture(m_definition.m_normalTextures[m_ownerKishiID],1);
+    // g_theRenderer->BindTexture(m_definition.m_specGlossEmitTextures[m_ownerKishiID],2);
+    //
+    // g_theRenderer->SetModelConstants(GetModelToWorldTransform(), m_tint);
+    // g_theRenderer->DrawIndexBuffer(m_definition.m_vertexBuffers[m_ownerKishiID],
+    //     m_definition.m_indexBuffers[m_ownerKishiID],
+    //     (unsigned int)m_definition.m_indexes[m_ownerKishiID].size());
+    int set = g_theGame->m_setSelected;
     g_theRenderer->BindShader(m_definition.m_shader);
     g_theRenderer->SetSamplerMode(SamplerMode::POINT_CLAMP);
-    //g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_NONE);
-    g_theRenderer->BindTexture(m_definition.m_diffuseTextures[m_ownerKishiID],0);
-    g_theRenderer->BindTexture(m_definition.m_normalTextures[m_ownerKishiID],1);
-    g_theRenderer->BindTexture(m_definition.m_specGlossEmitTextures[m_ownerKishiID],2);
+    g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_BACK);
+    g_theRenderer->BindTexture(m_definition.m_sets[set][m_ownerKishiID]->m_diffuseTexture,0);
+    g_theRenderer->BindTexture(m_definition.m_sets[set][m_ownerKishiID]->m_normalTexture,1);
+    g_theRenderer->BindTexture(m_definition.m_sets[set][m_ownerKishiID]->m_specularTexture,2);
 
-    g_theRenderer->SetModelConstants(GetModelToWorldTransform(), m_tint);
-    g_theRenderer->DrawIndexBuffer(m_definition.m_vertexBuffers[m_ownerKishiID],
-        m_definition.m_indexBuffers[m_ownerKishiID],
-        (unsigned int)m_definition.m_indexes[m_ownerKishiID].size());
+    //GetModelToWorldTransform().Append();
+    //m_definition.m_sets[set][m_ownerKishiID]->m_transform.Append(GetModelToWorldTransform());
+    Mat44 mat = GetModelToWorldTransform();
+    g_theRenderer->SetModelConstants(mat, m_tint);
+    g_theRenderer->DrawIndexBuffer(m_definition.m_sets[set][m_ownerKishiID]->m_vertexBuffer,
+        m_definition.m_sets[set][m_ownerKishiID]->m_indexBuffer,
+        (unsigned int)m_definition.m_sets[set][m_ownerKishiID]->m_indices.size());
 
     // if (m_isImpacted == true)
     // {
@@ -152,6 +171,18 @@ ChessKishi* ChessPiece::GetMyKishi() const
 ChessKishi* ChessPiece::GetAnotherKishi() const
 {
     return g_theGame->m_chessKishi[1-m_ownerKishiID];
+}
+
+Mat44 ChessPiece::GetModelToWorldTransform() const
+{
+    Mat44 rotate;
+    rotate = m_orientation.GetAsMatrix_IFwd_JLeft_KUp();
+    Mat44 translate;
+    translate = Mat44::MakeTranslation3D(m_position);
+
+    translate.Append(rotate);
+    translate.Append( m_definition.m_sets[g_theGame->m_setSelected][m_ownerKishiID]->m_transform);
+    return translate;
 }
 
 void ChessPiece::OnMove(IntVec2 from, IntVec2 to, ChessPieceType promoteType) //call时已确定to为空或对方棋子
@@ -371,6 +402,8 @@ void ChessPiece::OnMove(IntVec2 from, IntVec2 to, ChessPieceType promoteType) //
                                     ResetMyCoords(from, to);
                                     m_hasMoved = true;
                                     GetMyKishi()->m_lastMovedPiece = this;
+
+                                    g_theGame->m_chessReferee->SwapAndPrintBoardStatesAndRound();
                                     //fromPiece->m_lerpT = 0.f;
                                     //g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, to);
                                     //m_lastCoord = from;
@@ -448,6 +481,8 @@ void ChessPiece::OnMove(IntVec2 from, IntVec2 to, ChessPieceType promoteType) //
                                     ResetMyCoords(from, to);
                                     m_hasMoved = true;
                                     GetMyKishi()->m_lastMovedPiece = this;
+
+                                    g_theGame->m_chessReferee->SwapAndPrintBoardStatesAndRound();
                                     //fromPiece->m_lerpT = 0.f;
                                     //g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, to);
                                     //m_lastCoord = from;
@@ -955,6 +990,22 @@ void ChessPiece::OnMove(IntVec2 from, IntVec2 to, ChessPieceType promoteType) //
                 g_theDevConsole->AddLine(Rgba8::MISTBLUE, GetMoveResultString(result));
                 return;
             }
+            if (m_ownerKishiID == 0 && from.y < to.y)
+            {
+				m_currentCoord = from;
+				ChessMoveResult result;
+				result = ChessMoveResult::INVALID_MOVE_WRONG_MOVE_SHAPE;
+				g_theDevConsole->AddLine(Rgba8::MISTBLUE, GetMoveResultString(result));
+				return;
+            }
+            if (m_ownerKishiID == 1 && from.y > to.y)
+			{
+				m_currentCoord = from;
+				ChessMoveResult result;
+				result = ChessMoveResult::INVALID_MOVE_WRONG_MOVE_SHAPE;
+				g_theDevConsole->AddLine(Rgba8::MISTBLUE, GetMoveResultString(result));
+				return;
+			}
             else  
             {
                 if (g_theGame->m_chessReferee->m_chessBoard->HasBlockedOnAxial(from, to)) //TODO: 处理王车易位
@@ -1562,6 +1613,9 @@ ChessMoveResult ChessPiece::OnRaycastMoveTest(IntVec2 from, IntVec2 to)
                                         //g_theDevConsole->AddLine(Rgba8::RED, GetMoveResultString(result));
                                         return result;
                                     }
+
+									ChessMoveResult result;
+									result = ChessMoveResult::VALID_CAPTURE_ENPASSANT;
                                     
                                     // ChessMoveResult result;
                                     // result = ChessMoveResult::VALID_CAPTURE_ENPASSANT;
@@ -2043,9 +2097,35 @@ ChessMoveResult ChessPiece::OnRaycastMoveTest(IntVec2 from, IntVec2 to)
                 //g_theDevConsole->AddLine(Rgba8::MISTBLUE, GetMoveResultString(result));
                 return result;
             }
+			if (m_ownerKishiID == 0 && from.y < to.y)
+			{
+				m_currentCoord = from;
+				ChessMoveResult result;
+				result = ChessMoveResult::INVALID_MOVE_WRONG_MOVE_SHAPE;
+				g_theDevConsole->AddLine(Rgba8::MISTBLUE, GetMoveResultString(result));
+				return result;
+			}
+			if (m_ownerKishiID == 1 && from.y > to.y)
+			{
+				m_currentCoord = from;
+				ChessMoveResult result;
+				result = ChessMoveResult::INVALID_MOVE_WRONG_MOVE_SHAPE;
+				g_theDevConsole->AddLine(Rgba8::MISTBLUE, GetMoveResultString(result));
+				return result;
+			}
             else  
             {
-                if (g_theGame->m_chessReferee->m_chessBoard->HasBlockedOnAxial(from, to)) //TODO: 处理王车易位
+				if (to.y == 7 || to.y == 0 && !toPiece)
+				{
+                    if(g_theGame->m_chessReferee->m_currentMoveKishiIndex == 1 && to.y>from.y)
+					    return ChessMoveResult::VALID_MOVE_PROMOTION;
+                    if (g_theGame->m_chessReferee->m_currentMoveKishiIndex == 0 && to.y < from.y)
+                        return ChessMoveResult::VALID_MOVE_PROMOTION;
+                    else
+                        return ChessMoveResult::INVALID_MOVE_WRONG_MOVE_SHAPE;
+				}
+
+                if (g_theGame->m_chessReferee->m_chessBoard->HasBlockedOnAxial(from, to))
                 {
                     m_currentCoord = from;
                     ChessMoveResult result;
@@ -2344,101 +2424,117 @@ ChessMoveResult ChessPiece::OnRaycastSemiMoveTest(IntVec2 from, IntVec2 to)
 void ChessPiece::OnRaycastValidMove(IntVec2 from, IntVec2 to, ChessMoveResult result)
 {
     g_theDevConsole->AddLine(Rgba8::MINTGREEN, GetMoveResultString(result));
+    g_theGame->m_chessReferee->m_currentSetFromCoord = from;
+    g_theGame->m_chessReferee->m_currentSetToCoord = to;
+
+    if (result != ChessMoveResult::VALID_MOVE_PROMOTION)
+    {
+        EventArgs args;
+        args.SetValue("from", std::string{ static_cast<char>('a' + from.x), static_cast<char>('1' + from.y) });
+        args.SetValue("to",   std::string{ static_cast<char>('a' + to.x),   static_cast<char>('1' + to.y) });
+
+        g_theEventSystem->FireEvent("chessmove", args);
+    }
+    else
+    {
+        g_theGame->m_promoteWidget->SetEnabled(true);
+        g_theGame->m_gameClock->TogglePause();
+    }
     
-    ChessPiece* fromPiece = g_theGame->m_chessReferee->m_chessBoard->GetPiece(from);
-    ChessPiece* toPiece = g_theGame->m_chessReferee->m_chessBoard->GetPiece(to);
-    
-    if (result == ChessMoveResult::VALID_MOVE_NORMAL || result == ChessMoveResult::VALID_CAPTURE_NORMAL)
-    {
-        if (result == ChessMoveResult::VALID_MOVE_NORMAL)
-        {
-            g_theDevConsole->AddLine(Rgba8::MISTBLUE,
-            "Moved Player #" + std::to_string(g_theGame->m_chessReferee->m_currentMoveKishiIndex) + " ("
-            +GetMyKishi()->m_colorName+
-            ")'s " + fromPiece->m_definition.m_name + " from " + std::to_string(from.x) + std::to_string(from.y)
-            + " to " + std::to_string(to.x) + std::to_string(to.y));
-        }
-        if (result == ChessMoveResult::VALID_CAPTURE_NORMAL)
-        {
-            g_theDevConsole->AddLine(Rgba8::PEACH,
-            "Player #" + std::to_string(g_theGame->m_chessReferee->m_currentMoveKishiIndex) + " ("
-            + GetMyKishi()->m_colorName +") captured Player #" + std::to_string(g_theGame->m_chessReferee->m_nextMoveKishiIndex)
-            + " ("+ GetAnotherKishi()->m_colorName +")'s " + toPiece->m_definition.m_name + " at " +
-            std::to_string(to.x) + std::to_string(to.y));
-        }
+ //    ChessPiece* fromPiece = g_theGame->m_chessReferee->m_chessBoard->GetPiece(from);
+ //    ChessPiece* toPiece = g_theGame->m_chessReferee->m_chessBoard->GetPiece(to);
+ //    
+ //    if (result == ChessMoveResult::VALID_MOVE_NORMAL || result == ChessMoveResult::VALID_CAPTURE_NORMAL)
+ //    {
+ //        if (result == ChessMoveResult::VALID_MOVE_NORMAL)
+ //        {
+ //            g_theDevConsole->AddLine(Rgba8::MISTBLUE,
+ //            "Moved Player #" + std::to_string(g_theGame->m_chessReferee->m_currentMoveKishiIndex) + " ("
+ //            +GetMyKishi()->m_colorName+
+ //            ")'s " + fromPiece->m_definition.m_name + " from " + std::to_string(from.x) + std::to_string(from.y)
+ //            + " to " + std::to_string(to.x) + std::to_string(to.y));
+ //        }
+ //        if (result == ChessMoveResult::VALID_CAPTURE_NORMAL)
+ //        {
+ //            g_theDevConsole->AddLine(Rgba8::PEACH,
+ //            "Player #" + std::to_string(g_theGame->m_chessReferee->m_currentMoveKishiIndex) + " ("
+ //            + GetMyKishi()->m_colorName +") captured Player #" + std::to_string(g_theGame->m_chessReferee->m_nextMoveKishiIndex)
+ //            + " ("+ GetAnotherKishi()->m_colorName +")'s " + toPiece->m_definition.m_name + " at " +
+ //            std::to_string(to.x) + std::to_string(to.y));
+ //        }
+ //
+	// 	fromPiece->m_lerpT = 0.f;
+	// 	g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, to);
+ //        m_lastCoord = from;
+	// 	m_currentCoord = to;
+	// 	m_hasMoved = true;
+	// 	GetMyKishi()->m_lastMovedPiece = this;
+ //
+	// 	g_theGame->m_chessReferee->SwapAndPrintBoardStatesAndRound();
+ //        return;
+ //    }
+ //    if (result == ChessMoveResult::VALID_MOVE_PAWN_2SQUARE)
+ //    {
+ //        m_hasMoved2Squares = true;
+ //    }
+ //    if (result == ChessMoveResult::VALID_CASTLE_KINGSIDE)
+ //    {
+ //        ChessPiece* targetRook;
+ //        if (m_ownerKishiID == 0) //hei
+ //        {
+ //            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(7,7));
+ //            targetRook->m_hasMoved = true;
+ //            targetRook->ResetMyCoords(from, IntVec2(5,7));
+ //        }
+ //        else
+ //        {
+ //            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(7,0));
+ //            targetRook->m_hasMoved = true;
+ //            targetRook->ResetMyCoords(from, IntVec2(5,0));
+ //        }
+ //    }
+ //    if (result == ChessMoveResult::VALID_CASTLE_QUEENSIDE)
+ //    {
+ //        ChessPiece* targetRook;
+ //        if (m_ownerKishiID == 0) //hei
+ //        {
+ //            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(0,7));
+ //            targetRook->m_hasMoved = true;
+ //            targetRook->ResetMyCoords(from, IntVec2(3,7));
+ //        }
+ //        else
+ //        {
+ //            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(0,0));
+ //            targetRook->m_hasMoved = true;
+ //            targetRook->ResetMyCoords(from, IntVec2(3,0));
+ //        }
+ //    }
+ //    if (result == ChessMoveResult::VALID_CAPTURE_ENPASSANT)
+ //    {
+ //        if (g_theGame->m_chessReferee->m_currentMoveKishiIndex == 0)
+ //        {
+ //            g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, IntVec2(to.x, to.y + 1));
+ //        }
+	// 	if (g_theGame->m_chessReferee->m_currentMoveKishiIndex == 1)
+	// 	{
+	// 		g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, IntVec2(to.x, to.y - 1));
+	// 	}
+ //    }
+ //
+	// fromPiece->m_lerpT = 0.f;
+ //    m_lastCoord = from;
+	// m_currentCoord = to;
+	// m_hasMoved = true;
+	// GetMyKishi()->m_lastMovedPiece = this;
+	// g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, to);
 
-		fromPiece->m_lerpT = 0.f;
-		g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, to);
-        m_lastCoord = from;
-		m_currentCoord = to;
-		m_hasMoved = true;
-		GetMyKishi()->m_lastMovedPiece = this;
-
-		g_theGame->m_chessReferee->SwapAndPrintBoardStatesAndRound();
-        return;
-    }
-    if (result == ChessMoveResult::VALID_MOVE_PAWN_2SQUARE)
-    {
-        m_hasMoved2Squares = true;
-    }
-    if (result == ChessMoveResult::VALID_CASTLE_KINGSIDE)
-    {
-        ChessPiece* targetRook;
-        if (m_ownerKishiID == 0) //hei
-        {
-            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(7,7));
-            targetRook->m_hasMoved = true;
-            targetRook->ResetMyCoords(from, IntVec2(5,7));
-        }
-        else
-        {
-            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(7,0));
-            targetRook->m_hasMoved = true;
-            targetRook->ResetMyCoords(from, IntVec2(5,0));
-        }
-    }
-    if (result == ChessMoveResult::VALID_CASTLE_QUEENSIDE)
-    {
-        ChessPiece* targetRook;
-        if (m_ownerKishiID == 0) //hei
-        {
-            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(0,7));
-            targetRook->m_hasMoved = true;
-            targetRook->ResetMyCoords(from, IntVec2(3,7));
-        }
-        else
-        {
-            targetRook = g_theGame->m_chessReferee->m_chessBoard->GetPiece(IntVec2(0,0));
-            targetRook->m_hasMoved = true;
-            targetRook->ResetMyCoords(from, IntVec2(3,0));
-        }
-    }
-    if (result == ChessMoveResult::VALID_CAPTURE_ENPASSANT)
-    {
-        if (g_theGame->m_chessReferee->m_currentMoveKishiIndex == 0)
-        {
-            g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, IntVec2(to.x, to.y + 1));
-        }
-		if (g_theGame->m_chessReferee->m_currentMoveKishiIndex == 1)
-		{
-			g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, IntVec2(to.x, to.y - 1));
-		}
-    }
-
-	fromPiece->m_lerpT = 0.f;
-    m_lastCoord = from;
-	m_currentCoord = to;
-	m_hasMoved = true;
-	GetMyKishi()->m_lastMovedPiece = this;
-	g_theGame->m_chessReferee->m_chessBoard->CaptureAnotherPiece(from, to);
-
-    g_theDevConsole->AddLine(Rgba8::MISTBLUE,
-            "Moved Player #" + std::to_string(g_theGame->m_chessReferee->m_currentMoveKishiIndex) + " ("
-            +GetMyKishi()->m_colorName+
-            ")'s " + fromPiece->m_definition.m_name + " from " + std::to_string(from.x) + std::to_string(from.y)
-            + " to " + std::to_string(to.x) + std::to_string(to.y));
-
-    g_theGame->m_chessReferee->SwapAndPrintBoardStatesAndRound();
+    // g_theDevConsole->AddLine(Rgba8::MISTBLUE,
+    //         "Moved Player #" + std::to_string(g_theGame->m_chessReferee->m_currentMoveKishiIndex) + " ("
+    //         +GetMyKishi()->m_colorName+
+    //         ")'s " + fromPiece->m_definition.m_name + " from " + std::to_string(from.x) + std::to_string(from.y)
+    //         + " to " + std::to_string(to.x) + std::to_string(to.y));
+    //
+    // g_theGame->m_chessReferee->SwapAndPrintBoardStatesAndRound();
     return;
 }
 

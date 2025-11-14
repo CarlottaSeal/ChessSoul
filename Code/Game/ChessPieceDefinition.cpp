@@ -1,6 +1,7 @@
 ﻿#include "ChessPieceDefinition.h"
 
 #include "Engine/Core/EngineCommon.hpp"
+#include "Engine/Core/StaticMesh.h"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Math/AABB3.hpp"
 #include "Engine/Math/FloatRange.hpp"
@@ -8,6 +9,7 @@
 #include "Engine/Renderer/VertexBuffer.hpp"
 
 std::vector<ChessPieceDefinition> ChessPieceDefinition::s_chessPieceDefs;
+//StaticMesh* ChessPieceDefinition::m_sets[3][2];
 
 extern Renderer* g_theRenderer;
 
@@ -18,23 +20,36 @@ ChessPieceDefinition::ChessPieceDefinition(XmlElement const& element)
     std::string shaderName = ParseXmlAttribute(element, "shaderName", "UNKNOWN SHADER NAME");
     m_shader = g_theRenderer->CreateOrGetShader(shaderName.c_str(), VertexType::VERTEX_PCUTBN);
 
-    std::string diffuseTextureBlack = ParseXmlAttribute(element, "diffuseTextureNameForBlack", "UNKNOWN DIFFUSE BLACK NAME");
-    std::string diffuseTextureWhite = ParseXmlAttribute(element, "diffuseTextureNameForWhite", "UNKNOWN DIFFUSE WHITE NAME");
-    m_diffuseTextures[0] = g_theRenderer->CreateOrGetTextureFromFile(diffuseTextureBlack.c_str());
-    m_diffuseTextures[1] = g_theRenderer->CreateOrGetTextureFromFile(diffuseTextureWhite.c_str());
+    std::string modelForBlack1 = ParseXmlAttribute(element, "modelForBlack1", "");
+    std::string modelForWhite1 = ParseXmlAttribute(element, "modelForWhite1", "");
+    std::string modelForBlack2 = ParseXmlAttribute(element, "modelForBlack2", "");
+    std::string modelForWhite2 = ParseXmlAttribute(element, "modelForWhite2", "");
+    std::string modelForBlack3 = ParseXmlAttribute(element, "modelForBlack3", "");
+    std::string modelForWhite3 = ParseXmlAttribute(element, "modelForWhite3", "");
+    m_sets[0][0] = new StaticMesh(g_theRenderer, modelForBlack1);
+    m_sets[0][1] = new StaticMesh(g_theRenderer, modelForWhite1);
+    m_sets[1][0] = new StaticMesh(g_theRenderer, modelForBlack2);
+    m_sets[1][1] = new StaticMesh(g_theRenderer, modelForWhite2);
+    m_sets[2][0] = new StaticMesh(g_theRenderer, modelForBlack3);
+    m_sets[2][1] = new StaticMesh(g_theRenderer, modelForWhite3);
 
-    std::string normalTextureBlack = ParseXmlAttribute(element, "normalTextureNameForBlack", "UNKNOWN DIFFUSE BLACK NAME");
-    std::string normalTextureWhite = ParseXmlAttribute(element, "normalTextureNameForWhite", "UNKNOWN DIFFUSE WHITE NAME");
-    m_normalTextures[0] = g_theRenderer->CreateOrGetTextureFromFile(normalTextureBlack.c_str());
-    m_normalTextures[1] = g_theRenderer->CreateOrGetTextureFromFile(normalTextureWhite.c_str());
-
-    std::string specTextureBlack = ParseXmlAttribute(element, "specTextureNameForBlack", "UNKNOWN DIFFUSE BLACK NAME");
-    std::string specTextureWhite = ParseXmlAttribute(element, "specTextureNameForWhite", "UNKNOWN DIFFUSE WHITE NAME");
-    m_specGlossEmitTextures[0] = g_theRenderer->CreateOrGetTextureFromFile(specTextureBlack.c_str());
-    m_specGlossEmitTextures[1] = g_theRenderer->CreateOrGetTextureFromFile(specTextureWhite.c_str());
+    // std::string diffuseTextureBlack = ParseXmlAttribute(element, "diffuseTextureNameForBlack", "UNKNOWN DIFFUSE BLACK NAME");
+    // std::string diffuseTextureWhite = ParseXmlAttribute(element, "diffuseTextureNameForWhite", "UNKNOWN DIFFUSE WHITE NAME");
+    // m_diffuseTextures[0] = g_theRenderer->CreateOrGetTextureFromFile(diffuseTextureBlack.c_str());
+    // m_diffuseTextures[1] = g_theRenderer->CreateOrGetTextureFromFile(diffuseTextureWhite.c_str());
+    //
+    // std::string normalTextureBlack = ParseXmlAttribute(element, "normalTextureNameForBlack", "UNKNOWN DIFFUSE BLACK NAME");
+    // std::string normalTextureWhite = ParseXmlAttribute(element, "normalTextureNameForWhite", "UNKNOWN DIFFUSE WHITE NAME");
+    // m_normalTextures[0] = g_theRenderer->CreateOrGetTextureFromFile(normalTextureBlack.c_str());
+    // m_normalTextures[1] = g_theRenderer->CreateOrGetTextureFromFile(normalTextureWhite.c_str());
+    //
+    // std::string specTextureBlack = ParseXmlAttribute(element, "specTextureNameForBlack", "UNKNOWN DIFFUSE BLACK NAME");
+    // std::string specTextureWhite = ParseXmlAttribute(element, "specTextureNameForWhite", "UNKNOWN DIFFUSE WHITE NAME");
+    // m_specGlossEmitTextures[0] = g_theRenderer->CreateOrGetTextureFromFile(specTextureBlack.c_str());
+    // m_specGlossEmitTextures[1] = g_theRenderer->CreateOrGetTextureFromFile(specTextureWhite.c_str());
     
     m_type = GetChessPieceTypeByName(m_name);
-    InitializeVertsAndBuffersForType(m_type);
+    //InitializeVertsAndBuffersForType(m_type);
 
     InitializeGlyphs(m_type);
 }
@@ -64,6 +79,15 @@ void ChessPieceDefinition::ClearDefinitions()
 {
     for (ChessPieceDefinition chessPieceDef : s_chessPieceDefs)
     {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                StaticMesh* mesh = chessPieceDef.m_sets[i][j];
+                delete mesh;
+                mesh = nullptr;
+            }
+        }
         delete chessPieceDef.m_indexBuffers[0];
         delete chessPieceDef.m_indexBuffers[1];
         chessPieceDef.m_indexBuffers[0] = nullptr;

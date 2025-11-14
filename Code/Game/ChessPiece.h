@@ -41,6 +41,7 @@ public:
 private:
     ChessKishi* GetMyKishi() const;
     ChessKishi* GetAnotherKishi() const;
+    Mat44 GetModelToWorldTransform() const override;
 
 public:
     ChessPieceDefinition m_definition;

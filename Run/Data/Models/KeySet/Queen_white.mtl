@@ -1,0 +1,14 @@
+# Blender 4.4.3 MTL File: 'key.blend'
+# www.blender.org
+
+newmtl kingkey
+Ka 1.000000 1.000000 1.000000
+Ks 1.000000 1.000000 1.000000
+Ni 1.500000
+d 1.000000
+illum 3
+map_Kd E:/DESIGNE/Treasure Chest/kingkey/kingkey_albedo.jpg
+map_Ns E:/DESIGNE/Treasure Chest/kingkey/kingkey_roughness.jpg
+map_refl E:/DESIGNE/Treasure Chest/kingkey/kingkey_metallic.jpg
+map_Ke E:/DESIGNE/Treasure Chest/kingkey/kingkey_emissive.jpg
+map_Bump -bm 1.000000 E:/DESIGNE/Treasure Chest/kingkey/kingkey_normal.png

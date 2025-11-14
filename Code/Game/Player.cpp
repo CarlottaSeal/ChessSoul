@@ -21,7 +21,7 @@ Player::Player(Game* owner)
 	m_velocity = Vec3(2.f, 2.f, 2.f);
 	m_originV = m_velocity;
 
-	ResetPositionAndOrientation(Vec3(4.f, -2.f, 5.f), EulerAngles(90.f, 45.f, 0.f));
+	ResetPositionAndOrientation(Vec3(4.f, 4.f, 8.f), EulerAngles(90.f, 90.f, 0.f));
 }
 
 Player::~Player()
@@ -171,7 +171,7 @@ void Player::ResetPositionAndOrientation(Vec3 pos, EulerAngles orientation)
 
 void Player::UpdateAutoCamera()
 {
-	ResetPositionAndOrientation(Vec3(4.f, -2.f, 5.f), EulerAngles(90.f, 45.f, 0.f));
+	ResetPositionAndOrientation(m_autoPos, m_autoOrientation);
 }
 
 void Player::ToggleCameraMode()

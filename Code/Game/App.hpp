@@ -1,8 +1,5 @@
 ﻿#pragma once
-#include "Engine/Math/Vec2.hpp"
-#include "Engine/Renderer/Camera.hpp"
 #include "Game/Game.hpp"
-#include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Input/KeyButtonState.hpp"
 #include "Engine/Input/InputSystem.hpp"
 #include "Engine/Audio/AudioSystem.hpp"

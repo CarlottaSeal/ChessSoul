@@ -1,0 +1,11 @@
+﻿<StaticModelInfo
+    objFile = "Data/Models/ChaturangaSet/king.obj"
+    shader = "Data/Shaders/BlinnPhong"
+    diffuseMap = "Data/Models/ChaturangaSet/Raja__albedoGrey.tga.png"
+    normalMap = "Data/Models/ChaturangaSet/Raja__normal.tga.png"
+    specGlossEmitMap = ""
+    unitsPerMeter = "0.05"
+    x = "left"
+    y="up"
+    z="forward"
+/>

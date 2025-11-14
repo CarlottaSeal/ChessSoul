@@ -9,7 +9,6 @@
 #include "Engine/Math/AABB3.hpp"
 #include "Engine/Math/Mat44.hpp"
 #include "Engine/Math/MathUtils.hpp"
-#include "Engine/Core/ErrorWarningAssert.hpp"
 #include "Engine/Core/Rgba8.hpp"
 #include "Engine/Core/VertexUtils.hpp"
 #include "Engine/Core/Clock.hpp"
@@ -18,10 +17,10 @@
 #include "Engine/Renderer/Camera.hpp"
 #include "Engine/Audio/AudioSystem.hpp"
 #include "Engine/Renderer/SimpleTriangleFont.hpp"
+#include "Engine/UI/Button.h"
 
 #include "Game/Player.hpp"
 #include "Game/Gamecommon.hpp"
-#include "Game/EngineBuildPreferences.hpp"
 
 RandomNumberGenerator g_RNG;
 //extern AudioSystem* g_theAudio;
@@ -30,10 +29,7 @@ extern Clock* s_theSystemClock;
 Game::Game()
 {
 	m_isInAttractMode = true;
-	//m_gameCamera.SetOrthoView(Vec2(0.0f, 0.0f), Vec2(200.0f, 100.0f));
 	m_screenCamera.SetOrthographicView(Vec2(0.f, 0.f), Vec2(1600.f, 800.f));
-	//m_gameCamera.SetOrthographicView(Vec2(-1.0f, -1.0f), Vec2(1.0f, 1.0f));
-
 	m_player = new Player(this);
 
 	m_player->m_worldCamera.SetCameraMode(Camera::CameraMode::eMode_Perspective);
@@ -41,31 +37,41 @@ Game::Game()
 	Mat44 mat;
 	mat.SetIJK3D(Vec3(0.f, 0.f,1.f), Vec3(-1.f, 0.f, 0.f), Vec3(0.f, 1.f, 0.f));
 	((Player*)m_player)->m_worldCamera.SetCameraToRenderTransform(mat);
-	//m_gameCamera.SetPosition(Vec3(-2.f, 0.f, 0.f));
 
-	//g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_BACK);
-	PrintGameControlToDevConsole();
-	//DrawSquareXYGrid(100);
+	//DebugAddWorldBasis(mat, -1.f, DebugRenderMode::USE_DEPTH);
 
-	DebugAddWorldBasis(mat, -1.f, DebugRenderMode::USE_DEPTH);
-	//DebugAddWorldAxisText(mat);
-
+	m_attractCover = g_theRenderer->CreateOrGetTextureFromFile("Data/Images/Cover4.png");
 	Startup();
 }
 
 Game::~Game()
 {
 	ChessPieceDefinition::ClearDefinitions();
+
+	if (m_attractWidget)
+	{
+		delete m_attractWidget;
+		m_attractWidget = nullptr;
+	}
+	for (Widget* w : m_lobbyWidget)
+	{
+		delete w;
+		w = nullptr;
+	}
  }
 
 void Game::Startup()
 {
+	PrintGameControlToDevConsole();
 	ChessPieceDefinition::InitializeChessPieceDefinitions();
 
 	ChessKishi* kishi1 = new ChessKishi(0);
 	ChessKishi* kishi2 = new ChessKishi(1);
 	m_chessKishi[0] = kishi1;
 	m_chessKishi[1] = kishi2;
+
+	RegisterAllWidgetEvents();
+	LoadAnObj();
 }
 
 void Game::Update()
@@ -73,26 +79,20 @@ void Game::Update()
 	if (g_theApp->WasKeyJustPressed(KEYCODE_ESC)
 		|| g_theInput->GetController(0).WasButtonJustPressed(XboxButtonID::X))
 	{
-		//if (m_isInAttractMode)
 		if (m_currentState == GameState::ATTRACT)
 		{
 			g_theApp->g_isQuitting = true;
 		}
-		//if (!m_isInAttractMode)
 		if (m_currentState != GameState::ATTRACT)
 		{
-			//m_isInAttractMode = true;
 			ChangeState(GameState::ATTRACT);
 		}
 	}
-
 	AdjustForPauseAndTimeDistortion();
 
-	//if (m_isInAttractMode)
 	if (m_currentState == GameState::ATTRACT)
 	{
 		AttractStateUpdate();
-
 		if (!m_hasPlayedAttractSound)
 		{
 			//SoundID Attract = g_theAudio->CreateOrGetSound("Data/Audio/Attract.MP3");
@@ -100,11 +100,13 @@ void Game::Update()
 			m_hasPlayedAttractSound = true;
 		}
 	}
-
-	//if (!m_isInAttractMode)
 	if (m_currentState == GameState::PLAYING)
 	{
 		PlayingStateUpdate();
+	}
+	if (m_currentState == GameState::LOBBY)
+	{
+		LobbyStateUpdate();
 	}
 
 	if (g_theDevConsole->GetMode() == OPEN_FULL)
@@ -127,22 +129,23 @@ void Game::Update()
 
 void Game::Render() const
 {
-	//if (m_isInAttractMode)
 	if (m_currentState == GameState::ATTRACT)
 	{
 		AttractModeRender();
 	}
-
-	//if (!m_isInAttractMode)// && !IsInSelectInterface)
 	if (m_currentState == GameState::PLAYING)
 	{
 		PlayingModeRender();
 	}
-
+	if (m_currentState == GameState::LOBBY)
+	{
+		LobbyModeRender();
+	}
 	g_theRenderer->SetModelConstants();
 	g_theRenderer->BindShader(nullptr);
 	g_theRenderer->BindTexture(nullptr,0);
 	g_theRenderer->BindTexture(nullptr,1);
+	g_theRenderer->BindTexture(nullptr,2);
 	g_theDevConsole->Render(AABB2(m_screenCamera.GetOrthographicBottomLeft(), m_screenCamera.GetOrthographicTopRight()), g_theRenderer);
 }
 
@@ -208,7 +211,9 @@ void Game::EnterState(GameState state)
 	case GameState::ATTRACT:
 		EnterAttractState();
 		break;
-		
+	case GameState::LOBBY:
+		EnterLobbyState();
+		break;
 	case GameState::PLAYING:
 		EnterPlayingState();
 		break;
@@ -220,9 +225,12 @@ void Game::ExitState(GameState state)
 {
 	switch (state)
 	{
-	// case GameState::LOBBY:
-	// 	ExitLobbyState();
-	// 	break;
+	case GameState::ATTRACT:
+		ExitAttractState();
+		break;
+	case GameState::LOBBY:
+		ExitLobbyState();
+		break;
 	case GameState::PLAYING:
 		ExitPlayingState();
 		break;
@@ -232,17 +240,51 @@ void Game::ExitState(GameState state)
 void Game::EnterAttractState()
 {
 	m_hasWon = false;
-	EventArgs args;
-	FireEvent("clear", args);
+	m_isRemote = false;
+	InitializeWidgetsForAttract();
+	if (m_attractWidget)
+		m_attractWidget->Reset();
+}
+
+void Game::ExitAttractState()
+{
+	if (m_attractWidget)
+		m_attractWidget->SetEnabled(false);
+	
+	// delete m_attractWidget;
+	// m_attractWidget = nullptr;
 }
 
 void Game::EnterPlayingState()
 {
 	m_chessReferee = new ChessReferee(m_chessKishi);
+
+	m_promoteWidget = new Widget(m_screenCamera, AABB2(Vec2(), Vec2()),
+		"", Rgba8(0, 0, 0, 0));
+
+	Button* rook = new Button(m_promoteWidget, AABB2(Vec2(200.f, 300.f), Vec2(400.f, 450.f))
+		, Rgba8::MISTBLUE, Rgba8::WHITE, "rook", "Rook");
+	Button* queen = new Button(m_promoteWidget, AABB2(Vec2(450.f, 300.f), Vec2(650.f, 450.f))
+		, Rgba8::MISTBLUE, Rgba8::WHITE, "queen", "Queen");
+	Button* bishop = new Button(m_promoteWidget, AABB2(Vec2(700.f, 300.f), Vec2(900.f, 450.f))
+		, Rgba8::MISTBLUE, Rgba8::WHITE, "king", "Bishop");
+	Button* knight = new Button(m_promoteWidget, AABB2(Vec2(950.f, 300.f), Vec2(1150.f, 450.f))
+		, Rgba8::MISTBLUE, Rgba8::WHITE, "knight", "Knight");
+	m_promoteWidget->AddChild(*rook);
+	m_promoteWidget->AddChild(*queen);
+	m_promoteWidget->AddChild(*bishop);
+	m_promoteWidget->AddChild(*knight);
+	m_promoteWidget->SetEnabled(false);
 }
 
 void Game::ExitPlayingState()
 {
+	EventArgs args;
+	FireEvent("clear", args);
+
+	delete m_promoteWidget;
+	m_promoteWidget = nullptr;
+
 	for (ChessKishi* chessKishi : m_chessKishi)
 	{
 		chessKishi->m_lastMovedPiece = nullptr;
@@ -253,6 +295,88 @@ void Game::ExitPlayingState()
 
 void Game::ExitLobbyState()
 {
+	for (Widget* w : m_lobbyWidget)
+	{
+		if (w != nullptr)
+			w->SetEnabled(false);
+	}
+}
+
+void Game::EnterLobbyState()
+{
+	InitializeWidgetsForLobby();
+	if (m_lobbyWidget[0] != nullptr)
+	{
+		m_lobbyWidget[0]->Reset();
+		m_lobbyWidget[0]->SetEnabled(true);
+	}
+	if (m_lobbyWidget[1] != nullptr)
+	{
+		m_lobbyWidget[1]->Reset();
+		m_lobbyWidget[1]->SetEnabled(false);
+	}
+}
+
+void Game::InitializeWidgetsForAttract()
+{
+	if (!m_attractWidget)
+	{
+		m_attractWidget = new Widget(m_screenCamera, AABB2(Vec2() ,Vec2()),
+		"", Rgba8(0,0,0,0));
+		Button* exerciseButton = new Button(m_attractWidget, AABB2(Vec2(1350.f, 520.f), Vec2(1550.f, 600.f))
+						, Rgba8::MISTBLUE, Rgba8::WHITE, "localmodeselection","Exercise");
+		Button* remoteButton = new Button(m_attractWidget, AABB2(Vec2(1350.f, 360.f), Vec2(1550.f, 440.f))
+						, Rgba8::MISTBLUE, Rgba8::WHITE, "remotemodeselection","Remote");
+		Button* exit = new Button(m_attractWidget, AABB2(Vec2(1350.f, 200.f), Vec2(1550.f, 280.f))
+						, Rgba8::MISTBLUE, Rgba8::WHITE, "quit","Quit");
+		m_attractWidget->AddChild(*exerciseButton);
+		m_attractWidget->AddChild(*remoteButton);
+		m_attractWidget->AddChild(*exit);
+	}
+	m_attractWidget->SetEnabled(true);
+}
+
+void Game::InitializeWidgetsForLobby()
+{
+	if (!m_lobbyWidget[0])
+	{
+		m_lobbyWidget[0] = new Widget(m_screenCamera, AABB2(Vec2(10.f,10.f) ,Vec2(1590.f, 790.f)), "", Rgba8::AQUA);
+		Button* set1B = new Button(m_lobbyWidget[0], AABB2(Vec2(200.f, 200.f), Vec2(500.f, 500.f))
+					, Rgba8::WHITE, Rgba8::WHITE, "modelset1selection","", Vec2(0.5f, 0.5f), "Data/Images/Set1.png");
+		Button* set2B = new Button(m_lobbyWidget[0], AABB2(Vec2(650.f, 200.f), Vec2(950.f, 500.f))
+					, Rgba8::WHITE, Rgba8::WHITE, "modelset2selection","", Vec2(0.5f, 0.5f), "Data/Images/Set2.png");
+		Button* set3B = new Button(m_lobbyWidget[0], AABB2(Vec2(1100.f, 200.f), Vec2(1400.f, 500.f))
+					, Rgba8::WHITE, Rgba8::WHITE, "modelset3selection","", Vec2(0.5f, 0.5f), "Data/Images/Set3.png");
+		m_lobbyWidget[0]->AddChild(*set1B);
+		m_lobbyWidget[0]->AddChild(*set2B);
+		m_lobbyWidget[0]->AddChild(*set3B);
+		m_lobbyWidget[0]->SetEnabled(true);
+	}
+	if (m_isRemote == true)
+	{
+		if (!m_lobbyWidget[1])
+		{
+			m_lobbyWidget[1] = new Widget(m_screenCamera, AABB2(Vec2(10.f,10.f) ,Vec2(1590.f, 790.f)), "", Rgba8::MISTBLUE);
+			Button* server = new Button(m_lobbyWidget[1], AABB2(Vec2(300.f, 200.f), Vec2(650.f, 500.f))
+						, Rgba8::LAVENDER, Rgba8::WHITE, "servermodeselection","Server");
+			Button* client = new Button(m_lobbyWidget[1], AABB2(Vec2(950.f, 200.f), Vec2(1300.f, 500.f))
+						, Rgba8::LAVENDER, Rgba8::WHITE, "clientmodeselection","Client");
+			m_lobbyWidget[1]->AddChild(*server);
+			m_lobbyWidget[1]->AddChild(*client);
+			m_lobbyWidget[1]->SetEnabled(false);
+		}
+	}
+}
+
+void Game::RegisterAllWidgetEvents()
+{
+	g_theEventSystem->SubscribeEventCallBackFunction("remotemodeselection", OnRemoteModeSelection);
+	g_theEventSystem->SubscribeEventCallBackFunction("localmodeselection", OnLocalModeSelection);
+	g_theEventSystem->SubscribeEventCallBackFunction("modelset1selection", OnModelSet1Selection);
+	g_theEventSystem->SubscribeEventCallBackFunction("modelset2selection", OnModelSet2Selection);
+	g_theEventSystem->SubscribeEventCallBackFunction("modelset3selection", OnModelSet3Selection);
+	g_theEventSystem->SubscribeEventCallBackFunction("servermodeselection", OnServerModeSelection);
+	g_theEventSystem->SubscribeEventCallBackFunction("clientmodeselection", OnClientModeSelection);
 }
 
 void Game::UpdateFirstPersonRaycast()
@@ -266,14 +390,15 @@ void Game::UpdateFirstPersonRaycast()
 
 void Game::AttractStateUpdate()
 {
-	if (g_theApp->IsKeyDown(' ') ||
-		g_theApp->IsKeyDown('N') ||
-		g_theInput->GetController(0).WasButtonJustPressed(XboxButtonID::START) ||
-		g_theInput->GetController(0).WasButtonJustPressed(XboxButtonID::A))
-	{
-		//m_isInAttractMode = false;
-		ChangeState(GameState::PLAYING);
-	}
+	// if (g_theApp->IsKeyDown(' ') ||
+	// 	g_theApp->IsKeyDown('N') ||
+	// 	g_theInput->GetController(0).WasButtonJustPressed(XboxButtonID::START) ||
+	// 	g_theInput->GetController(0).WasButtonJustPressed(XboxButtonID::A))
+	// {
+	// 	//m_isInAttractMode = false;
+	// 	ChangeState(GameState::LOBBY);
+	// }
+	m_attractWidget->Update();
 }
 
 void Game::PlayingStateUpdate()
@@ -283,7 +408,24 @@ void Game::PlayingStateUpdate()
 	m_player->Update((float)s_theSystemClock->GetDeltaSeconds());
 	DebugRenderSystemInputUpdate();
 	if (m_chessReferee)
+	{
 		m_chessReferee->Update((float)s_theSystemClock->GetDeltaSeconds());
+		m_promoteWidget->Update();
+	}
+
+}
+
+void Game::LobbyStateUpdate()
+{
+	if (!m_isRemote)
+	{
+		m_lobbyWidget[0]->Update();
+	}
+	else
+	{
+		m_lobbyWidget[0]->Update();
+		m_lobbyWidget[1]->Update();
+	}
 }
 
 void Game::UpdateDebugInt()
@@ -446,15 +588,106 @@ std::string Game::GetDebugRenderPrintByInt() const
 	return "UNKNOWN";
 }
 
+bool Game::OnRemoteModeSelection(EventArgs& args)
+{
+	UNUSED(args)
+	g_theGame->m_isRemote = true;
+	g_theGame->ChangeState(GameState::LOBBY);
+	return true;
+}
+
+bool Game::OnLocalModeSelection(EventArgs& args)
+{
+	UNUSED(args)
+	g_theGame->m_isRemote = false;
+	g_theGame->ChangeState(GameState::LOBBY);
+	return true;
+}
+
+bool Game::OnModelSet1Selection(EventArgs& args)
+{
+	UNUSED(args)
+	if (!g_theGame->m_isRemote)
+		g_theGame->ChangeState(GameState::PLAYING);
+	else
+	{
+		g_theGame->m_lobbyWidget[0]->SetEnabled(false);
+		g_theGame->m_lobbyWidget[1]->SetEnabled(true);
+	}
+	g_theGame->m_setSelected = 0;
+	return true;
+}
+
+bool Game::OnModelSet2Selection(EventArgs& args)
+{
+	UNUSED(args)
+	if (!g_theGame->m_isRemote)
+		g_theGame->ChangeState(GameState::PLAYING);
+	else
+	{
+		g_theGame->m_lobbyWidget[0]->SetEnabled(false);
+		g_theGame->m_lobbyWidget[1]->SetEnabled(true);
+	}
+	g_theGame->m_setSelected = 1;
+	return true;
+}
+
+bool Game::OnModelSet3Selection(EventArgs& args)
+{
+	UNUSED(args)
+	if (!g_theGame->m_isRemote)
+		g_theGame->ChangeState(GameState::PLAYING);
+	else
+	{
+		g_theGame->m_lobbyWidget[0]->SetEnabled(false);
+		g_theGame->m_lobbyWidget[1]->SetEnabled(true);
+	}
+	g_theGame->m_setSelected = 2;
+	return true;
+}
+
+bool Game::OnServerModeSelection(EventArgs& args)
+{
+	UNUSED(args)
+	g_theNetworkSystem->SetMode(NetworkMode::SERVER);
+	g_theGame->ChangeState(GameState::PLAYING);
+	g_theDevConsole->AddLine(Rgba8::YELLOW, "Enter the game as a server. Use cmd to connect to client!");
+	return true;
+}
+
+bool Game::OnClientModeSelection(EventArgs& args)
+{
+	UNUSED(args)
+	g_theNetworkSystem->SetMode(NetworkMode::CLIENT);
+	g_theDevConsole->AddLine(Rgba8::YELLOW, "Enter the game as a client. Use cmd to connect to server!");
+	g_theGame->ChangeState(GameState::PLAYING);
+	return true;
+}
+
+void Game::LoadAnObj()
+{
+	//m_testMesh = new StaticMesh(g_theRenderer, "Data/Models/Woman");
+
+	// Mat44 mat;
+	// mat = mat.MakeUniformScale3D(0.02f);
+	// m_testMesh->m_transform.Append(mat);
+}
+
 void Game::AttractModeRender() const
 {
+	std::vector<Vertex_PCU> verts;
 	g_theRenderer->ClearScreen();
 	g_theRenderer->BeginCamera(m_screenCamera);
-	g_theRenderer->BindTexture(nullptr);
+	g_theRenderer->BindTexture(m_attractCover);
 	g_theRenderer->BindShader(nullptr);
 	g_theRenderer->SetBlendMode(BlendMode::ALPHA);
 	g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_NONE);
-	DebugDrawRing(Vec2(800.f, 400.f), 100.f, 10.f + sinf(m_varyTime) * 10.f, Rgba8::YELLOW);
+	//DebugDrawRing(Vec2(800.f, 400.f), 100.f, 10.f + sinf(m_varyTime) * 10.f, Rgba8::YELLOW);
+	g_theRenderer->DrawAABB2(m_screenCamera.GetOrthographicBounds(), Rgba8::WHITE);
+	AddVertsForTextTriangles2D(verts, "Chess Soul", Vec2(650.f, 600.f), 65.f, Rgba8::WHITE);
+	g_theRenderer->BindTexture(nullptr);
+	g_theRenderer->DrawVertexArray(verts);
+	m_attractWidget->Render();
 	g_theRenderer->EndCamera(m_screenCamera);
 }
 
@@ -464,11 +697,13 @@ void Game::PlayingModeRender() const
 	//g_theRenderer->ClearScreen();
 	g_theRenderer->BeginCamera(((Player*)m_player)->m_worldCamera);
 	g_theRenderer->SetBlendMode(BlendMode::ALPHA);
-	g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_BACK);
+	g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_NONE);
 	g_theRenderer->SetDepthMode(DepthMode::READ_WRITE_LESS_EQUAL);
 	//g_theRenderer->SetSamplerMode(SamplerMode::BILINEAR_WRAP);
 
 	m_chessReferee->Render();
+	
+	//g_theRenderer->DrawVertexIndexArray(m_testMesh->m_verts, m_testMesh->m_indices);
 
 	//g_theRenderer->BindTexture(nullptr);
 	//g_theRenderer->SetModelConstants();
@@ -482,6 +717,7 @@ void Game::PlayingModeRender() const
 	g_theRenderer->SetBlendMode(BlendMode::ALPHA);
 	g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_NONE);
 	DebugDrawRing(Vec2(800.f, 400.f), 5.f, 1.f, Rgba8::LAVENDER);
+	m_promoteWidget->Render();
 	g_theRenderer->EndCamera(m_screenCamera);
 	
 
@@ -531,28 +767,26 @@ void Game::PlayingModeRender() const
 	DebugRenderScreen(m_screenCamera);
 }
 
+void Game::LobbyModeRender() const
+{
+	g_theRenderer->ClearScreen(Rgba8(0,0,0));
+	g_theRenderer->BeginCamera(m_screenCamera);
+	g_theRenderer->BindTexture(nullptr);
+	g_theRenderer->BindShader(nullptr);
+	g_theRenderer->SetBlendMode(BlendMode::ALPHA);
+	g_theRenderer->SetRasterizerMode(RasterizerMode::SOLID_CULL_NONE);
+	for (Widget* w : m_lobbyWidget)
+	{
+		if (w)
+			w->Render();
+	}
+	g_theRenderer->EndCamera(m_screenCamera);
+}
+
 void Game::PrintGameControlToDevConsole()
 {
-	g_theDevConsole->AddLine(Rgba8::BLUE, "Type help for a list of commands");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "Mouse x-axis Right stick x-axis Yaw");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "Mouse y-axis Right stick y-axis Pitch");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "Q / E Left trigger / right trigger Roll");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "A / D Left stick x-axis Move left or right");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "W / S Left stick y-axis Move forward or back");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "Z / C Left shoulder / right shoulder Move down or up");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "H / Start button Reset position and orientation to zero");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "Shift / A button Increase speed by a factor of 10 while held");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "P - Pause the game");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "O - Single step frame");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "T - Slow motion mode");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "1 - Spawn line");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "2 - Spawn point");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "3 - Spawn wireframe sphere");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "4 - Spawn basis");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "5 - Spawn billboard");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "6 - Spawn wireframe cylinder");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "7 - Add message");
-	//g_theDevConsole->AddLine(Rgba8::CYAN, "ESC - Exit game");
+	//g_theDevConsole->AddLine(Rgba8::BLUE, "Type help for a list of commands");
+	//g_theDevConsole->AddLine(Rgba8::GREEN, std::string("This is a client"));
 }
 
 void Game::DrawSquareXYGrid(int unit /*= 100*/)

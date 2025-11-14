@@ -1,0 +1,11 @@
+﻿<StaticModelInfo
+    objFile = "Data/Models/KeySet/Queen_white.obj"
+    shader = "Data/Shaders/BlinnPhong"
+    diffuseMap = "Data/Models/KeySet/kingkey_albedo.jpg"
+    normalMap = "Data/Models/KeySet/kingkey_normal_DirectX.png"
+    specGlossEmitMap = "Data/Models/KeySet/kingkey_specular_converted.png"
+    unitsPerMeter =  "0.64"
+    x = "left"
+    y="up"
+    z="forward"
+/>

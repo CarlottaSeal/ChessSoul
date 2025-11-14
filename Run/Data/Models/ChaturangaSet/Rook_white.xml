@@ -1,0 +1,11 @@
+﻿<StaticModelInfo
+    objFile = "Data/Models/ChaturangaSet/rook.obj"
+    shader = "Data/Shaders/BlinnPhong"
+    diffuseMap = "Data/Models/ChaturangaSet/Ratha__albedoWhite.tga.png"
+    normalMap = "Data/Models/ChaturangaSet/Ratha__normal.tga.png"
+    specGlossEmitMap = ""
+    unitsPerMeter = "0.05"
+    x = "left"
+    y="up"
+    z="forward"
+/>

@@ -1,36 +1,72 @@
 <ChessDefinition>
   <!-- King -->
   <ChessDefinition name="king" shaderName = "Data/Shaders/BlinnPhong" 
+		modelForBlack1="Data/Models/KeySet/King_black"
+		modelForWhite1="Data/Models/KeySet/King_white"
+		modelForBlack2="Data/Models/LewisSet/King_black"
+		modelForWhite2="Data/Models/LewisSet/King_white"
+		modelForBlack3="Data/Models/ChaturangaSet/King_black"
+		modelForWhite3="Data/Models/ChaturangaSet/King_white"
                    diffuseTextureNameForBlack = "Data/Images/FunkyBricks_d.png" diffuseTextureNameForWhite = "Data/Images/Cobblestone_Diffuse.png" 
                    normalTextureNameForBlack = "Data/Images/FunkyBricks_n.png" normalTextureNameForWhite = "Data/Images/Cobblestone_Normal.png"
                    specTextureNameForBlack = "Data/Images/FunkyBricks_sge.png" specTextureNameForWhite = "Data/Images/Cobblestone_SpecGlossEmit.png">
   </ChessDefinition>
   <!-- Queen -->
   <ChessDefinition name="queen" shaderName = "Data/Shaders/BlinnPhong" 
+		modelForBlack1="Data/Models/KeySet/Queen_black"
+		modelForWhite1="Data/Models/KeySet/Queen_white"
+		modelForBlack2="Data/Models/LewisSet/Queen_black"
+		modelForWhite2="Data/Models/LewisSet/Queen_white"
+		modelForBlack3="Data/Models/ChaturangaSet/Queen_black"
+		modelForWhite3="Data/Models/ChaturangaSet/Queen_white"
                    diffuseTextureNameForBlack = "Data/Images/FunkyBricks_d.png" diffuseTextureNameForWhite = "Data/Images/Cobblestone_Diffuse.png"
                    normalTextureNameForBlack = "Data/Images/FunkyBricks_n.png" normalTextureNameForWhite = "Data/Images/Cobblestone_Normal.png"
                    specTextureNameForBlack = "Data/Images/FunkyBricks_sge.png" specTextureNameForWhite = "Data/Images/Cobblestone_SpecGlossEmit.png">
   </ChessDefinition>
   <!-- Rook -->
   <ChessDefinition name="rook" shaderName = "Data/Shaders/BlinnPhong" 
+		modelForBlack1="Data/Models/KeySet/Castle_black"
+		modelForWhite1="Data/Models/KeySet/Castle_white"
+		modelForBlack2="Data/Models/LewisSet/Castle_black"
+		modelForWhite2="Data/Models/LewisSet/Castle_white"
+		modelForBlack3="Data/Models/ChaturangaSet/Rook_black"
+		modelForWhite3="Data/Models/ChaturangaSet/Rook_white"
                    diffuseTextureNameForBlack = "Data/Images/FunkyBricks_d.png" diffuseTextureNameForWhite = "Data/Images/Cobblestone_Diffuse.png"
                    normalTextureNameForBlack = "Data/Images/FunkyBricks_n.png" normalTextureNameForWhite = "Data/Images/Cobblestone_Normal.png"
                    specTextureNameForBlack = "Data/Images/FunkyBricks_sge.png" specTextureNameForWhite = "Data/Images/Cobblestone_SpecGlossEmit.png">
   </ChessDefinition>
   <!-- Knight -->
   <ChessDefinition name="knight" shaderName = "Data/Shaders/BlinnPhong" 
+		modelForBlack1="Data/Models/KeySet/Knight_black"
+		modelForWhite1="Data/Models/KeySet/Knight_white"
+		modelForBlack2="Data/Models/LewisSet/Knight_black"
+		modelForWhite2="Data/Models/LewisSet/Knight_white"
+		modelForBlack3="Data/Models/ChaturangaSet/Knight_black"
+		modelForWhite3="Data/Models/ChaturangaSet/Knight_white"
                    diffuseTextureNameForBlack = "Data/Images/FunkyBricks_d.png" diffuseTextureNameForWhite = "Data/Images/Cobblestone_Diffuse.png"
                    normalTextureNameForBlack = "Data/Images/FunkyBricks_n.png" normalTextureNameForWhite = "Data/Images/Cobblestone_Normal.png"
                    specTextureNameForBlack = "Data/Images/FunkyBricks_sge.png" specTextureNameForWhite = "Data/Images/Cobblestone_SpecGlossEmit.png">
   </ChessDefinition>
   <!-- Pawn -->
   <ChessDefinition name="pawn" shaderName = "Data/Shaders/BlinnPhong" 
+		modelForBlack1="Data/Models/KeySet/Pawn_black"
+		modelForWhite1="Data/Models/KeySet/Pawn_white"
+		modelForBlack2="Data/Models/LewisSet/Pawn_black"
+		modelForWhite2="Data/Models/LewisSet/Pawn_white"
+		modelForBlack3="Data/Models/ChaturangaSet/Pawn_black"
+		modelForWhite3="Data/Models/ChaturangaSet/Pawn_white"
                    diffuseTextureNameForBlack = "Data/Images/FunkyBricks_d.png" diffuseTextureNameForWhite = "Data/Images/Cobblestone_Diffuse.png"
                    normalTextureNameForBlack = "Data/Images/FunkyBricks_n.png" normalTextureNameForWhite = "Data/Images/Cobblestone_Normal.png"
                    specTextureNameForBlack = "Data/Images/FunkyBricks_sge.png" specTextureNameForWhite = "Data/Images/Cobblestone_SpecGlossEmit.png">
   </ChessDefinition>
   <!-- Bishop -->
-  <ChessDefinition name="bishop" shaderName = "Data/Shaders/BlinnPhong" 
+  <ChessDefinition name="bishop" shaderName = "Data/Shaders/BlinnPhong"
+		modelForBlack1="Data/Models/KeySet/Bishop_black"
+		modelForWhite1="Data/Models/KeySet/Bishop_white" 
+		modelForBlack2="Data/Models/LewisSet/Bishop_black"
+		modelForWhite2="Data/Models/LewisSet/Bishop_white"
+		modelForBlack3="Data/Models/ChaturangaSet/Bishop_black"
+		modelForWhite3="Data/Models/ChaturangaSet/Bishop_white"
                    diffuseTextureNameForBlack = "Data/Images/FunkyBricks_d.png" diffuseTextureNameForWhite = "Data/Images/Cobblestone_Diffuse.png"
                    normalTextureNameForBlack = "Data/Images/FunkyBricks_n.png" normalTextureNameForWhite = "Data/Images/Cobblestone_Normal.png"
                    specTextureNameForBlack = "Data/Images/FunkyBricks_sge.png" specTextureNameForWhite = "Data/Images/Cobblestone_SpecGlossEmit.png">

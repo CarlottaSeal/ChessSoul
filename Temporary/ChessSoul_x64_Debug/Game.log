@@ -1,0 +1,76 @@
+﻿  App.cpp
+  ChessBoard.cpp
+  ChessKishi.cpp
+  ChessObject.cpp
+  ChessPiece.cpp
+  ChessPieceDefinition.cpp
+  ChessReferee.cpp
+  Game.cpp
+  Gamecommon.cpp
+  Main_Windows.cpp
+  Player.cpp
+  Generating Code...
+Engine.lib(Vec2.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Vec2.obj)' or at ''; linking object as if no debug info
+Engine.lib(Mat44.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Mat44.obj)' or at ''; linking object as if no debug info
+Engine.lib(Camera.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Camera.obj)' or at ''; linking object as if no debug info
+Engine.lib(Window.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Window.obj)' or at ''; linking object as if no debug info
+Engine.lib(Renderer.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Renderer.obj)' or at ''; linking object as if no debug info
+Engine.lib(KeyButtonState.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(KeyButtonState.obj)' or at ''; linking object as if no debug info
+Engine.lib(NetworkSystem.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(NetworkSystem.obj)' or at ''; linking object as if no debug info
+Engine.lib(EventSystem.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(EventSystem.obj)' or at ''; linking object as if no debug info
+Engine.lib(DevConsole.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(DevConsole.obj)' or at ''; linking object as if no debug info
+Engine.lib(UISystem.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(UISystem.obj)' or at ''; linking object as if no debug info
+Engine.lib(InputSystem.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(InputSystem.obj)' or at ''; linking object as if no debug info
+Engine.lib(Clock.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Clock.obj)' or at ''; linking object as if no debug info
+Engine.lib(DebugRenderSystem.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(DebugRenderSystem.obj)' or at ''; linking object as if no debug info
+Engine.lib(UIElement.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(UIElement.obj)' or at ''; linking object as if no debug info
+Engine.lib(Rgba8.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Rgba8.obj)' or at ''; linking object as if no debug info
+Engine.lib(Vec3.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Vec3.obj)' or at ''; linking object as if no debug info
+Engine.lib(IntVec2.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(IntVec2.obj)' or at ''; linking object as if no debug info
+Engine.lib(AABB3.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(AABB3.obj)' or at ''; linking object as if no debug info
+Engine.lib(EulerAngles.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(EulerAngles.obj)' or at ''; linking object as if no debug info
+Engine.lib(VertexUtils.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(VertexUtils.obj)' or at ''; linking object as if no debug info
+Engine.lib(AABB2.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(AABB2.obj)' or at ''; linking object as if no debug info
+Engine.lib(MathUtils.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(MathUtils.obj)' or at ''; linking object as if no debug info
+Engine.lib(NamedStrings.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(NamedStrings.obj)' or at ''; linking object as if no debug info
+Engine.lib(FloatRange.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(FloatRange.obj)' or at ''; linking object as if no debug info
+Engine.lib(StringUtils.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(StringUtils.obj)' or at ''; linking object as if no debug info
+Engine.lib(OBB3.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(OBB3.obj)' or at ''; linking object as if no debug info
+Engine.lib(tinyxml2.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(tinyxml2.obj)' or at ''; linking object as if no debug info
+Engine.lib(XmlUtils.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(XmlUtils.obj)' or at ''; linking object as if no debug info
+Engine.lib(ErrorWarningAssert.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(ErrorWarningAssert.obj)' or at ''; linking object as if no debug info
+Engine.lib(StaticMesh.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(StaticMesh.obj)' or at ''; linking object as if no debug info
+Engine.lib(XboxController.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(XboxController.obj)' or at ''; linking object as if no debug info
+Engine.lib(Widget.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Widget.obj)' or at ''; linking object as if no debug info
+Engine.lib(BitmapFont.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(BitmapFont.obj)' or at ''; linking object as if no debug info
+Engine.lib(SimpleTriangleFont.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(SimpleTriangleFont.obj)' or at ''; linking object as if no debug info
+Engine.lib(Button.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Button.obj)' or at ''; linking object as if no debug info
+Engine.lib(Vertex_PCU.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Vertex_PCU.obj)' or at ''; linking object as if no debug info
+Engine.lib(Vec4.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Vec4.obj)' or at ''; linking object as if no debug info
+Engine.lib(imgui_impl_win32.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(imgui_impl_win32.obj)' or at ''; linking object as if no debug info
+Engine.lib(DX11Renderer.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(DX11Renderer.obj)' or at ''; linking object as if no debug info
+Engine.lib(Timer.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Timer.obj)' or at ''; linking object as if no debug info
+Engine.lib(Time.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Time.obj)' or at ''; linking object as if no debug info
+Engine.lib(Vertex_PCUTBN.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Vertex_PCUTBN.obj)' or at ''; linking object as if no debug info
+Engine.lib(OBB2.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(OBB2.obj)' or at ''; linking object as if no debug info
+Engine.lib(RandomNumberGenerator.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(RandomNumberGenerator.obj)' or at ''; linking object as if no debug info
+Engine.lib(Sphere.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Sphere.obj)' or at ''; linking object as if no debug info
+Engine.lib(StaticMeshUtils.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(StaticMeshUtils.obj)' or at ''; linking object as if no debug info
+Engine.lib(Image.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Image.obj)' or at ''; linking object as if no debug info
+Engine.lib(AnalogJoystick.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(AnalogJoystick.obj)' or at ''; linking object as if no debug info
+Engine.lib(SpriteSheet.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(SpriteSheet.obj)' or at ''; linking object as if no debug info
+Engine.lib(imgui.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(imgui.obj)' or at ''; linking object as if no debug info
+Engine.lib(Texture.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Texture.obj)' or at ''; linking object as if no debug info
+Engine.lib(Shader.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(Shader.obj)' or at ''; linking object as if no debug info
+Engine.lib(VertexBuffer.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(VertexBuffer.obj)' or at ''; linking object as if no debug info
+Engine.lib(IndexBuffer.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(IndexBuffer.obj)' or at ''; linking object as if no debug info
+Engine.lib(ConstantBuffer.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(ConstantBuffer.obj)' or at ''; linking object as if no debug info
+Engine.lib(FileUtils.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(FileUtils.obj)' or at ''; linking object as if no debug info
+Engine.lib(SpriteDefinition.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(SpriteDefinition.obj)' or at ''; linking object as if no debug info
+Engine.lib(imgui_draw.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(imgui_draw.obj)' or at ''; linking object as if no debug info
+Engine.lib(imgui_widgets.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(imgui_widgets.obj)' or at ''; linking object as if no debug info
+Engine.lib(imgui_tables.obj) : warning LNK4099: PDB '' was not found with 'Engine.lib(imgui_tables.obj)' or at ''; linking object as if no debug info
+  Game.vcxproj -> C:\p4\Personal\SD\ChessSoul\Temporary\ChessSoul_x64_Debug\ChessSoul_Debug_x64.exe
+  Copying ChessSoul_Debug_x64.exe to C:\p4\Personal\SD\ChessSoul\Run...
+  C:\p4\Personal\SD\ChessSoul\Temporary\ChessSoul_x64_Debug\ChessSoul_Debug_x64.exe -> C:\p4\Personal\SD\ChessSoul\Run\ChessSoul_Debug_x64.exe
+  1 File(s) copied
